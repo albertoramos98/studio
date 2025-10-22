@@ -9,7 +9,9 @@ from datetime import datetime
 APP_SECRET = os.environ.get('APP_SECRET', 'troque_esta_chave')
 DB = os.environ.get('DB_PATH', 'studio_v2.db')
 
+from flask import Flask
 app = Flask(__name__)
+
 app.config['SECRET_KEY'] = APP_SECRET
 
 # Configuração do Flask-Mail (use variáveis de ambiente para credenciais reais)
