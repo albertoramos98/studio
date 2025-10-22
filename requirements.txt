@@ -3,3 +3,7 @@ Flask-Mail
 Werkzeug
 flask_sqlalchemy
 gunicorn
+
+psycopg2-binary
+
+python-dotenv

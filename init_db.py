@@ -1,53 +1,83 @@
-import sqlite3
+import psycopg2
+import os
+from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 
-DB = 'studio_v2.db'
-conn = sqlite3.connect(DB)
-c = conn.cursor()
+# Carrega variáveis de ambiente de um arquivo .env (para teste local)
+load_dotenv()
 
-# users: id, username, password_hash, email, registered (0/1)
-c.execute('''
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY,
-    username TEXT UNIQUE,
-    password_hash TEXT,
-    email TEXT,
-    registered INTEGER DEFAULT 0
-)
-''')
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# expenses: id, description, amount, date, urgency (0-low,1-med,2-high), owner, paid (0/1)
-c.execute('''
-CREATE TABLE IF NOT EXISTS expenses (
-    id INTEGER PRIMARY KEY,
-    description TEXT,
-    amount REAL,
-    date TEXT,
-    urgency INTEGER,
-    owner TEXT,
-    paid INTEGER DEFAULT 0
-)
-''')
+if not DATABASE_URL:
+    raise Exception("Variável de ambiente DATABASE_URL não encontrada.")
 
-# incomes: id, description, amount, date, owner
-c.execute('''
-CREATE TABLE IF NOT EXISTS incomes (
-    id INTEGER PRIMARY KEY,
-    description TEXT,
-    amount REAL,
-    date TEXT,
-    owner TEXT
-)
-''')
+conn = None
+c = None
 
-# Pré-cadastrar os 5 possíveis usuários (sem senha ainda)
-allowed = ['alpe', 'bastos', 'doug', 'prlt', 'alberto']
-for u in allowed:
-    try:
-        c.execute('INSERT INTO users (username, registered) VALUES (?,?)', (u, 0))
-    except Exception:
-        pass
+try:
+    conn = psycopg2.connect(DATABASE_URL)
+    c = conn.cursor()
 
-conn.commit()
-conn.close()
-print('DB inicializado com usuários permitidos:', allowed)
+    # MUDANÇA: Trocado "INTEGER PRIMARY KEY" por "SERIAL PRIMARY KEY" (padrão do Postgres)
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username TEXT UNIQUE,
+        password_hash TEXT,
+        email TEXT,
+        registered INTEGER DEFAULT 0
+    )
+    ''')
+
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS expenses (
+        id SERIAL PRIMARY KEY,
+        description TEXT,
+        amount REAL,
+        date TEXT,
+        urgency INTEGER,
+        owner TEXT,
+        paid INTEGER DEFAULT 0
+    )
+    ''')
+
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS incomes (
+        id SERIAL PRIMARY KEY,
+        description TEXT,
+        amount REAL,
+        date TEXT,
+        owner TEXT
+    )
+    ''')
+
+    conn.commit()
+    print("Tabelas 'users', 'expenses', e 'incomes' verificadas/criadas.")
+
+    # Pré-cadastrar os 5 possíveis usuários (sem senha ainda)
+    allowed = ['alpe', 'bastos', 'doug', 'prlt', 'alberto']
+    
+    for u in allowed:
+        # MUDANÇA: "INSERT OR IGNORE" não existe no Postgres,
+        # então verificamos antes se o usuário já existe.
+        # MUDANÇA: Trocado "?" por "%s" (padrão do psycopg2)
+        c.execute("SELECT 1 FROM users WHERE username = %s", (u,))
+        if c.fetchone() is None:
+            c.execute('INSERT INTO users (username, registered) VALUES (%s, %s)', (u, 0))
+            print(f"Usuário '{u}' pré-cadastrado.")
+        else:
+            print(f"Usuário '{u}' já existe.")
+
+    conn.commit()
+    print('DB inicializado com usuários permitidos:', allowed)
+
+except Exception as e:
+    print(f"Ocorreu um erro: {e}")
+    if conn:
+        conn.rollback() # Desfaz a transação em caso de erro
+finally:
+    if c:
+        c.close()
+    if conn:
+        conn.close()
+    print("Conexão com o banco fechada.")
