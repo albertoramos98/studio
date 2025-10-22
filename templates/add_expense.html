@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-2xl mx-auto mt-6 bg-slate-800 rounded-xl shadow p-6">
+  <h3 class="text-xl font-semibold mb-4">Nova despesa</h3>
+  <form method="post" class="space-y-4">
+    <div>
+      <label class="text-sm text-slate-300">Descrição</label>
+      <input name="description" class="w-full mt-1 p-2 rounded-md bg-slate-700 text-white" required>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div>
+        <label class="text-sm text-slate-300">Valor</label>
+        <input name="amount" class="w-full mt-1 p-2 rounded-md bg-slate-700 text-white" required>
+      </div>
+      <div>
+        <label class="text-sm text-slate-300">Data</label>
+        <input name="date" type="date" class="w-full mt-1 p-2 rounded-md bg-slate-700 text-white">
+      </div>
+    </div>
+    <div>
+      <label class="text-sm text-slate-300">Urgência</label>
+      <select name="urgency" class="w-full mt-1 p-2 rounded-md bg-slate-700 text-white">
+        <option value="0">Baixa</option>
+        <option value="1">Média</option>
+        <option value="2">Alta</option>
+      </select>
+    </div>
+    <div class="flex justify-end">
+      <button class="px-4 py-2 bg-indigo-600 rounded-md">Adicionar</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

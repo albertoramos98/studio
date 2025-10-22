@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="col-span-2">
+    <div class="bg-slate-800 rounded-xl shadow p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold">Resumo</h3>
+          <p class="text-sm text-slate-400">Visão rápida do caixa</p>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-slate-400">Caixa disponível</div>
+          <div class="text-2xl font-bold">R$ {{ '%.2f' % total_available }}</div>
+        </div>
+      </div>
+      <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="p-3 bg-slate-700 rounded-md">
+          <div class="text-sm text-slate-300">Total recebido</div>
+          <div class="text-lg font-semibold">R$ {{ '%.2f' % total_income }}</div>
+        </div>
+        <div class="p-3 bg-slate-700 rounded-md">
+          <div class="text-sm text-slate-300">Gasto (pago)</div>
+          <div class="text-lg font-semibold">R$ {{ '%.2f' % total_spent }}</div>
+        </div>
+        <div class="p-3 bg-slate-700 rounded-md">
+          <div class="text-sm text-slate-300">Pendências</div>
+          <div class="text-lg font-semibold">R$ {{ '%.2f' % total_pending }}</div>
+        </div>
+      </div>
+      <div class="mt-4">
+        <h4 class="text-md font-semibold mb-2">Despesas recentes</h4>
+        <div class="space-y-2">
+          {% for r in recent %}
+          <div class="flex items-center justify-between p-3 rounded-md {% if r['paid'] %}bg-slate-700{% else %}{% if r['urgency']==2 %}bg-rose-700/10{% elif r['urgency']==1 %}bg-amber-700/10{% else %}bg-slate-700/20{% endif %}{% endif %}">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-md flex items-center justify-center {% if r['urgency']==2 %}bg-rose-600{% elif r['urgency']==1 %}bg-amber-500{% else %}bg-emerald-500{% endif %} text-white font-bold">
+                {% if r['urgency']==2 %}H{% elif r['urgency']==1 %}M{% else %}L{% endif %}
+              </div>
+              <div>
+                <div class="font-medium {% if r['paid'] %}line-through text-slate-400{% endif %}">{{ r['description'] }}</div>
+                <div class="text-xs text-slate-400">{{ r['date'] }} • {{ r['owner'] }}</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="font-semibold {% if r['paid'] %}text-slate-400 line-through{% endif %}">R$ {{ '%.2f' % r['amount'] }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside>
+    <div class="bg-slate-800 rounded-xl shadow p-4 space-y-4">
+      <div>
+        <h4 class="text-md font-semibold">Ações rápidas</h4>
+        <div class="mt-2 flex flex-col gap-2">
+          <a href="{{ url_for('add') }}" class="block text-center px-3 py-2 rounded-md bg-indigo-600">Nova despesa</a>
+          <a href="{{ url_for('add_income') }}" class="block text-center px-3 py-2 rounded-md bg-emerald-600">Adicionar dinheiro</a>
+          <a href="{{ url_for('expenses') }}" class="block text-center px-3 py-2 rounded-md bg-slate-600">Ver todas despesas</a>
+        </div>
+      </div>
+      <div>
+        <h5 class="text-sm text-slate-300">Dica</h5>
+        <p class="text-xs text-slate-400">Marque as despesas como pagas quando forem quitadas para atualizar o caixa.</p>
+      </div>
+    </div>
+    <div class="mt-4 bg-slate-800 rounded-xl shadow p-4">
+      <h5 class="text-sm text-slate-300">Resumo rápido</h5>
+      <ul class="text-sm mt-2 space-y-2 text-slate-300">
+        <li>Total recebido: R$ {{ '%.2f' % total_income }}</li>
+        <li>Total gasto (pago): R$ {{ '%.2f' % total_spent }}</li>
+        <li>Pendências: R$ {{ '%.2f' % total_pending }}</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+{% endblock %}

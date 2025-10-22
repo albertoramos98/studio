@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto mt-6">
+  <div class="bg-slate-800 rounded-xl shadow p-4">
+    <h3 class="text-xl font-semibold mb-4">Todas as despesas</h3>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-left">
+        <thead class="text-slate-300 text-sm">
+          <tr>
+            <th class="px-3 py-2">#</th><th class="px-3 py-2">Descrição</th><th class="px-3 py-2">Valor</th><th class="px-3 py-2">Data</th><th class="px-3 py-2">Urgência</th><th class="px-3 py-2">Quem</th><th class="px-3 py-2">Status</th><th class="px-3 py-2">Ações</th>
+          </tr>
+        </thead>
+        <tbody class="text-slate-200">
+          {% for r in rows %}
+          <tr class="border-t border-slate-700">
+            <td class="px-3 py-2">{{ r['id'] }}</td>
+            <td class="px-3 py-2 {% if r['paid'] %}line-through text-slate-400{% endif %}">{{ r['description'] }}</td>
+            <td class="px-3 py-2 {% if r['paid'] %}text-slate-400{% endif %}">R$ {{ '%.2f' % r['amount'] }}</td>
+            <td class="px-3 py-2">{{ r['date'] }}</td>
+            <td class="px-3 py-2">
+              {% if r['urgency']==2 %}<span class="px-2 py-1 rounded-full text-xs bg-rose-600">Alta</span>{% elif r['urgency']==1 %}<span class="px-2 py-1 rounded-full text-xs bg-amber-500">Média</span>{% else %}<span class="px-2 py-1 rounded-full text-xs bg-emerald-500">Baixa</span>{% endif %}
+            </td>
+            <td class="px-3 py-2">{{ r['owner'] }}</td>
+            <td class="px-3 py-2">{% if r['paid'] %}<span class="text-sm text-emerald-400">Pago</span>{% else %}<span class="text-sm text-amber-300">Pendente</span>{% endif %}</td>
+            <td class="px-3 py-2">
+              <form method="post" action="{{ url_for('toggle_paid', exp_id=r['id']) }}" style="display:inline">
+                <button class="px-2 py-1 rounded-md {% if r['paid'] %}bg-slate-600{% else %}bg-emerald-600{% endif %} text-sm">{% if r['paid'] %}Desmarcar pago{% else %}Marcar pago{% endif %}</button>
+              </form>
+              <form method="post" action="{{ url_for('delete_expense', exp_id=r['id']) }}" style="display:inline" onsubmit="return confirm('Remover?');">
+                <button class="px-2 py-1 rounded-md bg-rose-600 text-sm ml-2">Remover</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
