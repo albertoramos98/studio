@@ -1,3 +1,5 @@
 Flask
 Flask-Mail
 Werkzeug
+flask_sqlalchemy
+gunicorn
